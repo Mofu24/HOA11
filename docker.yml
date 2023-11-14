@@ -5,8 +5,8 @@
 
     - name: Install Docker
       when: ansible_distribution == 'CentOS'
-      dnf:
-        name: docker-ce
+      yum:
+        name: docker
         state: present
 
     - name: Install Docker
@@ -15,10 +15,16 @@
         name: docker.io
         state: present
 
-    - name: Enable Docker socket
-      systemd:
-        name: docker.socket
+    - name: Enable Docker service
+      service:
+        name: docker
+        state: started
         enabled: yes
+
+    - name: If the group doesn.t exist create a docker group
+      group:
+        name: docker
+        state: present
 
     - name: Add current user to Docker group
       user:
@@ -53,9 +59,3 @@
           CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
         dest: /home/{{ ansible_user }}/Dockerfile
       when: ansible_distribution == 'CentOS'
-
-    - name: Install and build Dockerfile using Ansible
-      docker_image:
-        path: /home/{{ ansible_user }}/Dockerfile
-        name: myimage
-        source: build
